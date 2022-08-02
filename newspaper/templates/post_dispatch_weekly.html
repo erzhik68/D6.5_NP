@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Еженедельная рассылка</title>
+</head>
+<body>
+    <h3>Здравствуйте, {{user_name}}!</h3>
+    <p>Рассылка за последнюю неделю с {{date}}</p>
+    for post in posts:
+        <ul>
+            <li>
+                <a href="{% url 'post_detail' post.id %}">{{post}}</a>
+            </li>
+        </ul>
+</body>
+</html>
