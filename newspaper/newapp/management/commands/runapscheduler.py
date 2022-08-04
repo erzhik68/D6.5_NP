@@ -16,11 +16,15 @@ from newapp.models import Category, Post
 logger = logging.getLogger(__name__)
 
 def my_job():   # наша задача по выводу текста на экран
+    # print("My job in runapscheduler")
+    # print(Post.objects.get(id=1))
+
     for category in Category.objects.all():  # выводим каждую категорию
         #  вывод новостей за последнюю неделю в данной категории
         posts = Post.objects.filter(post_date_time__gt=date.today()-timedelta(weeks=1), post_category__category_name=category)
         for user in Category.objects.get(id=category.pk).subscribers.all():
-            html_content = render_to_string(  # получаем наш html
+            # получаем наш html
+            html_content = render_to_string(
                 'post_dispatch_weekly.html',
                 {
                     'post': posts,
@@ -53,7 +57,8 @@ class Command(BaseCommand):
         scheduler.add_job(
             my_job,
             # trigger=CronTrigger(day_of_week="*/mon"), # запускать каждую неделю в понедельник
-            trigger=CronTrigger(hour='*/1'), # для теста, запуск каждый час
+            # trigger=CronTrigger(hour='*/1'), # для теста, запуск каждый час
+            trigger=CronTrigger(minute='*/1'),  # для теста, запуск каждую минуту
             # Тоже самое что и интервал, но задача тригера таким образом более понятна django
             id="my_job",  # уникальный айди
             max_instances=1,
