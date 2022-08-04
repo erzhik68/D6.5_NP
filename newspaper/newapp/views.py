@@ -1,7 +1,8 @@
 # print(data.__dict__) чтоб узнать все варианты
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.http import request, HttpResponse
+from django import forms
+from django.http import request, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, UpdateView, CreateView, DetailView, \
     DeleteView  # импортируем класс, который говорит нам о том, что в этом представлении мы будем выводить список объектов из БД
@@ -18,7 +19,7 @@ class PostsList(LoginRequiredMixin, ListView):
     template_name = 'posts.html'  # указываем имя шаблона, в котором будет лежать HTML, в нём будут все инструкции о том, как именно пользователю должны вывестись наши объекты
     context_object_name = 'posts'  # это имя списка, в котором будут лежать все объекты, его надо указать, чтобы обратиться к самому списку объектов через HTML-шаблон
     ordering = ['-id']
-    paginate_by = 10  # поставим постраничный вывод в один элемент
+    paginate_by = 5  # поставим постраничный вывод в один элемент
 
     # form_class = PostForm # добавляем форм класс, чтобы получать доступ к форме через метод POST
 
@@ -30,6 +31,7 @@ class PostsList(LoginRequiredMixin, ListView):
         context['filter'] = PostFilter(self.request.GET, queryset=self.get_queryset())  # вписываем наш фильтр в контекст
         #        context['form'] = PostForm()
         context['is_not_authors'] = not self.request.user.groups.filter(name='authors').exists()  # добавили новую контекстную переменную is_not_authors
+        context['count_posts'] = self.model.objects.filter(post_date_time__date=date.today(), post_author__author_user__username=self.request.user).count()
         return context
 
     # def post(self, request, *args, **kwargs):
@@ -73,6 +75,11 @@ class PostDetailView(DetailView):
             context['is_not_subscribed'] = not c.subscribers.filter(username=self.request.user.username).exists()
         return context
 
+
+class LimitForm(forms.Form):
+    name = forms.CharField()
+    age = forms.IntegerField()
+
 # дженерик для создания поста. Указываем имя шаблона и класс формы.
 class PostCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Post
@@ -96,8 +103,7 @@ class PostCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
             self.object = PostForm.save()
             return super().form_valid(PostForm)
         else:
-
-            return HttpResponse('Пользователь может публиковать не более трёх новостей в сутки')
+            return HttpResponseRedirect('/')
 
 # дженерик для редактирования поста
 class PostUpdateView(PermissionRequiredMixin, UpdateView):

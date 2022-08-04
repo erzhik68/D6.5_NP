@@ -52,6 +52,9 @@ Posts
 
     <a href="{% url 'post_create' %}">Добавить новость/статью</a>
     <br>
+    {% if count_posts == 3 %}
+        <p><font color="red" size="-1.5">Вы достигли лимита! Пользователь не может публиковать более трёх новостей в сутки!</font></p>
+    {% endif %}
 
     {% if is_paginated %}
 
